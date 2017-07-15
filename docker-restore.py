@@ -4,12 +4,15 @@ RESULT_FILE = "start_docker.sh"
 DOCKERPATH = "/var/lib/docker/containers"
 BASE_RUN_COMMAND = "docker run -d --name {} {} --restart always "
 
+def load_file(path)
+    with open(path[0]) as confv2:
+        data = json.load(confv2)
+    return data
+
 def parse_file(path):
     data = {}
-    with open(path[0]) as confv2:
-        data['args'] = json.load(confv2)
-    with open(path[1]) as hostconf:
-        data['host'] = json.load(hostconf)
+    data['args'] = load_file(path[0])
+    data['host'] = load_file(path[1])
     return data
 
 def get_docker_configs():
@@ -65,7 +68,7 @@ def create_result_file():
     f = open(RESULT_FILE, 'w')
     f.write("#!/bin/bash\n\n")
     f.close()
-    os.chmod(RESULT_FILE, 0755)
+    os.chmod(RESULT_FILE, 755)
 
 def check_if_docker():
     if not os.path.exists(DOCKERPATH):

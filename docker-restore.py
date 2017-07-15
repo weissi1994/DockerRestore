@@ -35,9 +35,6 @@ def parse_ports(data):
             if data['host']['PortBindings'][entry]:
                 i = 0
                 for port, ip in data['host']['PortBindings'][entry]:
-                    if str(inside_port) == "80":
-                        res += " -l traefik.backend="+data['args']['Name'][1:]
-                        res += " -l traefik.frontend.rule=Host:"+data['args']['Name'][1:]+".derzer.at"
                     res += " -p "+(data['host']['PortBindings'][entry][i][ip]+":" if data['host']['PortBindings'][entry][i][ip] else "")+data['host']['PortBindings'][entry][i][port]+":"+inside_port
                     i += 1
             else:

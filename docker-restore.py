@@ -2,13 +2,14 @@ import json, os, sys
 
 RESULT_FILE = "start_docker.sh"
 DOCKERPATH = "/var/lib/docker/containers"
+BASE_RUN_COMMAND = "docker run -d --name {} {} --restart always "
 
 def parse_file(path):
     data = {}
-    with open(path[0]) as data_file:
-        data['args'] = json.load(data_file)
-    with open(path[1]) as data_file:
-        data['host'] = json.load(data_file)
+    with open(path[0]) as confv2:
+        data['args'] = json.load(confv2)
+    with open(path[1]) as hostconf:
+        data['host'] = json.load(hostconf)
     return data
 
 def get_docker_configs():
@@ -16,9 +17,8 @@ def get_docker_configs():
 
 def main():
     for conf in get_docker_configs():
-        print conf
         write_command(parse_file(conf))
-    print "Done!"
+    print("Done!")
 
 def parse_volumes(data):
     res = ""
@@ -55,13 +55,10 @@ def write_command(data):
         env = parse_env(data)
         args = volumes.strip() + ((" " if volumes != "" else "") + ports.strip() if ports != "" else "") + (" " + env.strip() if env != "" else "")
         if len(data['args']['Name'][1:]) < 20:
-            if data['args']['Name'][1:] == "gitlab":
-                data_file.write("docker run -d --name {} {} --hostname git.derzer.at --restart always {}\n".format(data['args']['Name'][1:], args, data['args']['Config']['Image']))
+            if data['host']['Privileged']:
+                data_file.write((BASE_RUN_COMMAND+"--privileged {}\n").format(data['args']['Name'][1:], args, data['args']['Config']['Image']))
             else:
-                if data['host']['Privileged']:
-                    data_file.write("docker run -d --name {} {} --restart always --privileged {}\n".format(data['args']['Name'][1:], args, data['args']['Config']['Image']))
-                else:
-                    data_file.write("docker run -d --name {} {} --restart always {}\n".format(data['args']['Name'][1:], args, data['args']['Config']['Image']))
+                data_file.write((BASE_RUN_COMMAND+"{}\n").format(data['args']['Name'][1:], args, data['args']['Config']['Image']))
     return data
 
 def create_result_file():
@@ -72,7 +69,7 @@ def create_result_file():
 
 def check_if_docker():
     if not os.path.exists(DOCKERPATH):
-        print "Please install docker first"
+        print("Please install docker first")
         sys.exit()
 
 def setup():

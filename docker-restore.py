@@ -4,7 +4,7 @@ RESULT_FILE = "start_docker.sh"
 DOCKERPATH = "/var/lib/docker/containers"
 BASE_RUN_COMMAND = "docker run -d --name {} {} --restart always "
 
-def load_file(path)
+def load_file(path):
     with open(path[0]) as confv2:
         data = json.load(confv2)
     return data
